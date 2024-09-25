@@ -13,6 +13,9 @@ from csbdeep.utils import Path, normalize
 from stardist import calculate_extents, fill_label_holes
 from stardist.models import Config2D, StarDist2D
 
+from datetime import datetime
+
+
 # Read Training Data
 
 X = sorted(glob('data/img/*.tif'))
@@ -65,7 +68,10 @@ conf = Config2D(
 )
 
 # Name of the model corresponds to the folder that the model is stored in
-model = StarDist2D(conf, name='2024-09-25_blastoderm-nuclei', basedir='models')
+
+now_time = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+
+model = StarDist2D(conf, name=now_time, basedir='models')
 
 # %%
 # median_size = calculate_extents(list(Y), np.median)
