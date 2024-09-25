@@ -4,16 +4,29 @@ import sys
 import numpy as np
 import albumentations as A
 
+from tqdm import tqdm
+from glob import glob
+
 from tifffile import imread
 from csbdeep.utils import Path, normalize
 
-from stardist import calculate_extents
+from stardist import calculate_extents, fill_label_holes
 from stardist.models import Config2D, StarDist2D
 
-X = imread("data/blastoderm_nuclei_180x180.tif")[:26]
-Y = imread("data/blastoderm_nuclei_180x180_LABELING.tif")[:26]
+# Read Training Data
 
-X = normalize(X,1,99.8,axis=(0,1,2))
+X = sorted(glob('data/img/*.tif'))
+Y = sorted(glob('data/labels/*.tif'))
+
+X = np.concatenate(list(map(imread,X)))
+Y = np.concatenate(list(map(imread,Y)))
+
+axis_norm = (0, 1)
+
+X = [normalize(x, 1, 99.8, axis=axis_norm) for x in tqdm(X)]
+Y = [fill_label_holes(y) for y in tqdm(Y)]
+
+# Select training and validation data at random
 
 assert len(X) > 1, "not enough training data"
 
@@ -30,7 +43,8 @@ print('- training:       %3d' % len(X_trn))
 print('- validation:     %3d' % len(X_val))
 
 
-# %%
+# Set up model
+
 # 32 is a good default choice (see 1_data.ipynb)
 n_rays = 32
 
@@ -99,6 +113,8 @@ def augmenter(x, y):
     
     return x_aug, y_aug
 
+
+# Train and optimize model
 
 model.train(X_trn, Y_trn, validation_data=(X_val,Y_val), augmenter=augmenter)
 

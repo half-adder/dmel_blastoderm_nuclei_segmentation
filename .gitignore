@@ -2,6 +2,6 @@
 ._.DS_Store
 ._requirements.txt
 .ipynb_checkpoints/
-data/
+# data/
 *.out
 *.simg
